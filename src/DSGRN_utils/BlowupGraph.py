@@ -676,35 +676,47 @@ class BlowupGraph:
         # rmap is a list of vectors given by the relation
         # rmap[i][j] = T[i -> rmap[i][j]]
 
+        # Compute dynamics for F_1
+        # level = 2
+        # Compute dynamics for F_2
+        # level = 2.5
+        # Compute dynamics for F_3
+        # level = 3.5
+
+        # Only levels 0 and 1 are avialable for D > 3
+        if self.D > 3 and level > 0:
+            level = 1
         # STEP 2: Build complex
         start = time.time()
         self.Rule0()
         end = time.time()
 
         # STEP 3: Apply rules
+        # Define F_1
         if level >= 1:
             start = time.time()
             self.Rule11() # flow data
             end = time.time()
-        if level >= 1.5:
+            # if level >= 1.5:
             start = time.time()
             self.Rule12()
             end = time.time()
-        if level >= 2:
+            # if level >= 2:
             start = time.time()
             self.Rule21() # remove self edge
             end = time.time()
-        if level >= 2.5:
+        # Define F_2
+        if level >= 2:
+            # if level >= 2.5:
             start = time.time()
             self.Rule22()
             end = time.time()
+        # Define F_3
         if level >= 3:
             start = time.time()
             self.Rule31()
             end = time.time()
-        if level >= 3.5:
+            # if level >= 3.5:
             start = time.time()
             self.Rule32()
             end = time.time()
-        # if level > 0:
-        #     self.checkfordoublearrow()
