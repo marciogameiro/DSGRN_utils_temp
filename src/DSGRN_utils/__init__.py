@@ -24,7 +24,7 @@ def ConleyMorseGraph(parameter, parameter_graph, level=0):
         return len(scc_v) > 1 or any(c in std.digraph.adjacencies(c) for c in scc_v)
 
     CMG = InducedPoset_E(dag, lambda v : non_trivial_scc(v) and v != fringenode)
-    return CM, CMG, std
+    return connection_matrix, CMG, std
 
 def PlotMorseGraph(morse_graph):
     connection_matrix, CMG, std = morse_graph
