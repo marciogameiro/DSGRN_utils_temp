@@ -167,10 +167,16 @@ def blowup_cc_complex_json(fc_stg):
                                      "cells": cells}}
     return complex_json_data
 
-
-def morse_graph_json(CMG, conley_indices):
+def morse_graph_json(CMG, connection_matrix):
     # Return json data for Morse graph
     # CMG: Conley Morse graph
+    conley_indices = connection_matrix.count()
+    val2index = { connection_matrix.value(c): c for c in connection_matrix.complex()}
+    # Get vertices not in the complex (with trivial Conley index)
+    N = len(val2index)
+    verts_trivial_CI = [v for v in CMG.vertices() if v not in val2index]
+    val2index.update({v: N + k for k, v in enumerate(verts_trivial_CI)})
+    # vert_index = {v: k for k, v in enumerate(sorted(CMG.vertices()))}
     vert_index = {v: k for k, v in enumerate(CMG.vertices())}
     n = len(conley_indices[next(iter(conley_indices))])
 
@@ -184,9 +190,13 @@ def morse_graph_json(CMG, conley_indices):
     def vertex_label(u):
         # Return vertex label for Morse graph
         if u in conley_indices:
-            return str(u) + " : " + str(tuple(conley_indices[u]))
+            return str(val2index[u]) + " : " + str(tuple(conley_indices[u]))
+            # return str(vert_index[u]) + " : " + str(tuple(conley_indices[u]))
+            # return str(u) + " : " + str(tuple(conley_indices[u]))
         else:
-            return str(u) + " : " + str(tuple([0] * n))
+            return str(val2index[u]) + " : " + str(tuple([0] * n))
+            # return str(vert_index[u]) + " : " + str(tuple([0] * n))
+            # return str(u) + " : " + str(tuple([0] * n))
 
     morse_graph_data = []  # Morse graph data
     for u in CMG.vertices():
@@ -299,7 +309,7 @@ def save_morse_graph_database_json(network, database_fname, param_indices=None,
                      if fibration.value(c) == v]
             return len(scc_v) > 1 or any(c in fc_stg.digraph.adjacencies(c) for c in scc_v)
         CMG = InducedPoset_E(dag, lambda v: non_trivial_scc(v) and v != fringenode)
-        morse_graph_json_data = morse_graph_json(CMG, conley_indices)
+        morse_graph_json_data = morse_graph_json(CMG, connection_matrix)
         morse_sets_json_data = morse_sets_json(fc_stg, CMG, fibration)
         stg_json_data = state_transition_graph_json(fc_stg)
         # Dynamics data for this parameter

@@ -30,7 +30,7 @@ class DrawPosetGraph():
         return getattr(self._a,attr)
 
     def __init__(self, a, poset,fig_filename='fig_filename'):
-        self._a = a
+        self._a = a # connection_matrix
         self.poset = poset
         self.L = self.poset.ListOfNivelSets()
         self.I = set()
@@ -52,43 +52,50 @@ class DrawPosetGraph():
     def graphviz(self):
         """ Return a graphviz string describing the graph and its labels """
         gv = 'digraph {\n'
-        indices = { v : str(k) for k,v in enumerate(self.poset.vertices())}
+        # self._a is the connection matrix
+        val2index = {self._a.value(c): c for c in self._a.complex()}
+        # Get vertices not in the complex (with trivial Conley index)
+        N = len(val2index)
+        verts_trivial_CI = [v for v in self.poset.vertices() if v not in val2index]
+        val2index.update({v: N + k for k, v in enumerate(verts_trivial_CI)})
+        # vertices = sorted(self.poset.vertices())
+        # indices = { v : str(k) for k, v in enumerate(vertices)}
+        indices = { v : str(k) for k, v in enumerate(self.poset.vertices())}
         counts = self._a.count()
         #print(counts)
          ########## minhas mudanças
         n = len(counts[next(iter(counts))])
         def vertex_label(v):
             if v in counts:
-                return str(v) + " : " + str(tuple(counts[v]))
+                return str(val2index[v]) + " : " + str(tuple(counts[v]))
+                # Testing
+                # return indices[v] + '( ' + str(val2index[v]) + ', ' + str(v) + ') : ' + str(tuple(counts[v]))
+                # return indices[v] + " : " + str(tuple(counts[v]))
+                # return str(v) + " : " + str(tuple(counts[v]))
             else:
-                return str(v) + " : " + str(tuple([0] * n))# return str(v) + " : (0,0,0)"
-
+                return str(val2index[v]) + " : " + str(tuple([0] * n))
+                # Testing
+                # return indices[v] + '( ' + str(val2index[v]) + ', ' + str(v) + ') : ' + str(tuple([0] * n))
+                # return indices[v] + " : " + str(tuple([0] * n))
+                # return str(v) + " : " + str(tuple([0] * n))# return str(v) + " : (0,0,0)"
         for v in self.poset.vertices():
-
             # self.preimage(v) changed to v in self.poset.vertices()
-
             if v in self.I:
                 gv += indices[v] + '[label="' + vertex_label(v) + ('", shape = septagon, color = red, style=filled, fillcolor=' + self.ColorPosition(v) + '];\n' if v in self.poset.vertices() else '"];\n')
             else:
                 gv += indices[v] + '[label="' + vertex_label(v) + ('", style=filled, fillcolor=' + self.ColorPosition(v) + '];\n' if v in self.poset.vertices() else '"];\n')
-
         if self.L != []: #begin of ranking the nodes that are attractor
             gv += '{rank=same; '
-
             for v in self.L[0]:
                 gv += indices[v] + ' '
-
             gv += ' ;}; \n' #ending of ranking the nodes that are attractor
             ############
-
         for v in self.poset.vertices():
             for u in self.poset.children(v):
                 gv += indices[v] + ' -> ' + indices[u] + ';\n'
-
         return gv + '}\n'
 
     def _repr_svg_(self):
         f = graphviz.Source(self.graphviz(), filename=self.filename, format='pdf')
         f.render(cleanup=True);
         return graphviz.Source(self.graphviz())
-

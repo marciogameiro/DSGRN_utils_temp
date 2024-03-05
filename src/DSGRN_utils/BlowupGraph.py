@@ -1,5 +1,5 @@
 # RookRulesCubicalComplex.py  # 2021-12-01
-# MIT LICENSE 2021 Bernardo Rivas, Ewerton R. Vieira, Marcio Gameiro
+# MIT LICENSE 2021 Bernardo Rivas, Ewerton R. Vieira
 
 import DSGRN
 import re, time
@@ -475,7 +475,7 @@ class BlowupGraph:
         counter = 0
         for i in range(2,self.D+1):
             for J_e in combinations(range(self.D),self.D-i):
-                coords = [ list(c) for c in product(*( range(0,n) for n in self.network.domains())) ]
+                coords = [ list(c) for c in product(*( range(0,n) for n in self.domains)) ]
                 shape = sum([ 2**n for n in J_e ])
                 for coord in coords:
                     s = self.cc.cell_index(coord,shape)
@@ -506,26 +506,20 @@ class BlowupGraph:
                                         ps_,pt_ = self.cc.right(ps_,n),self.cc.right(pt_,n)
                                 S_,T_ = self.cc_to_fc(s_),self.cc_to_fc(t_)
                                 PS_,PT_ = self.cc_to_fc(ps_),self.cc_to_fc(pt_)
-
-                                # If s_ -> t_ matches ps_ -> pt_ , then we want it to be the same
-                                # if self.DoubleArrow(S_,T_) or self.DoubleArrow(PS_,PT_):
-                                #     print("Rule 22: There is a unsolved double arrow in the higher dimension for s=",s,"and t=",t,"that shouldn't happen.")
-                                #     if self.DoubleArrow(S_,T_): 
-                                #         print("The unsolved double arrow is going forward in the gradient direction.")
-                                #         print("s_=",s_,"t_=",t_)
-                                #     if self.DoubleArrow(PS_,PT_): 
-                                #         print("The unsolved double arrow is going backwards in the gradient direction.")
-                                #         print("ps_=",s_,"pt_=",t_)
-                                #     print("Something is funny, what about G(t)\capJ_i(t)=",GradientInessential)
-                                #     print("I knew it, the problem wasn't here :)")
                                 if self.Arrow(PT_,PS_) and self.Arrow(T_,S_):
                                     remove_ST.append(T)
                                 elif self.Arrow(PS_,PT_) and self.Arrow(S_,T_):
                                     remove_TS.append(T)
-                            # otherwise it is different and we want it opposing s_ -> t_
-                                elif self.Arrow(T_,S_):
+                            # The following is from the original code and was adapted to not run Case III of Rule 2 in N=3
+                            # # otherwise it is different and we want it opposing s_ -> t_
+                            #     elif self.Arrow(T_,S_):
+                            #         remove_TS.append(T)
+                            #     elif self.Arrow(S_,T_):
+                            #         remove_ST.append(T)
+                                # counter = counter+1
+                                elif self.Arrow(T_,S_) and i == 2:
                                     remove_TS.append(T)
-                                elif self.Arrow(S_,T_):
+                                elif self.Arrow(S_,T_) and i == 2:
                                     remove_ST.append(T)
                                 counter = counter+1
 
@@ -587,40 +581,6 @@ class BlowupGraph:
                     self.digraph.remove_edge(T,S)
                     counter = counter+1
 
-    def Rule32(self):
-        counter = 0
-        for (s,t) in self.edges:
-            if s == t:
-                continue
-            if self.blowupinfinity(s) or self.blowupinfinity(t):
-                continue
-            S,T = self.cc_to_fc(s), self.cc_to_fc(t)
-            if not self.DoubleArrow(S,T):
-                continue
-
-            if any(n in self.JiCapJe(s,t) for n in self.GradientDirections(s)):
-                self.digraph.remove_edge(S,T)
-                self.digraph.remove_edge(T,S)
-
-            remove_ST,remove_TS = [],[]
-            ps_,pt_ = s,t
-            for n in [ v for v in self.GradientDirections(s) if v in self.InessentialDirections(t) ]:
-                if self.Psi_n(s,n) == 1:
-                    ps_,pt_ = self.cc.left(ps_,n),self.cc.left(pt_,n)
-                else: #self.Psi_n(s,n) == -1
-                    ps_,pt_ = self.cc.right(ps_,n),self.cc.right(pt_,n)
-            PS_,PT_ = self.cc_to_fc(ps_),self.cc_to_fc(pt_)
-            if not self.Arrow(PT_,PS_):
-                remove_TS.append(T)
-                counter = counter+1
-            if not self.Arrow(PS_,PT_):
-                remove_ST.append(T)
-                counter = counter+1
-            for T in remove_ST:
-                self.digraph.remove_edge(S,T)
-            for T in remove_TS:
-                self.digraph.remove_edge(T,S)
-
     def checkfordoublearrow(self):
         num_double_edges = 0
         # num_double_edges_in_equilibrium = 0
@@ -676,16 +636,6 @@ class BlowupGraph:
         # rmap is a list of vectors given by the relation
         # rmap[i][j] = T[i -> rmap[i][j]]
 
-        # Compute dynamics for F_1
-        # level = 2
-        # Compute dynamics for F_2
-        # level = 2.5
-        # Compute dynamics for F_3
-        # level = 3.5
-
-        # Only levels 0 and 1 are avialable for D > 3
-        if self.D > 3 and level > 0:
-            level = 1
         # STEP 2: Build complex
         start = time.time()
         self.Rule0()
@@ -697,17 +647,14 @@ class BlowupGraph:
             start = time.time()
             self.Rule11() # flow data
             end = time.time()
-            # if level >= 1.5:
             start = time.time()
             self.Rule12()
             end = time.time()
-            # if level >= 2:
             start = time.time()
             self.Rule21() # remove self edge
             end = time.time()
         # Define F_2
         if level >= 2:
-            # if level >= 2.5:
             start = time.time()
             self.Rule22()
             end = time.time()
@@ -715,8 +662,4 @@ class BlowupGraph:
         if level >= 3:
             start = time.time()
             self.Rule31()
-            end = time.time()
-            # if level >= 3.5:
-            start = time.time()
-            self.Rule32()
             end = time.time()

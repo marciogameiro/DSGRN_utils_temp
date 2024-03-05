@@ -169,8 +169,7 @@ class SetCM:
             for j in range(i+1,n):
                 if np.allclose(self.matrix_form(eval(self.All_CM[i])),self.matrix_form(eval(self.All_CM[j]))):
                     remove.append(j)
-        # Need to make sure remove is sorted (Marcio)
-        for i in reversed(sorted(remove)): # remove in reversed order to preserve the index
+        for i in reversed(remove): # remove in reversed order to preserve the index
             del self.All_CM[i]
 
         # # Failed attempt at exclusion:
