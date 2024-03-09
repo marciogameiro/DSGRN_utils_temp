@@ -309,14 +309,14 @@ def save_morse_graph_database_json(network, database_fname, param_indices=None,
         # Get all non-trivial Morse sets (including the ones with trivial CI)
 
         def non_trivial_scc(v):
-            scc_v = [c for c in std.digraph.vertices() if fibration.value(c) == v]
+            scc_v = [c for c in fc_stg.digraph.vertices() if fibration.value(c) == v]
             counts = connection_matrix.count()
             if v in counts: # Non-trivial Conley Index
                 return True
             # Get gradient directions
             grad_dirs = []
             for c in scc_v:
-                grad_dirs.append(set(std.GradientDirections(std.fc_to_cc(c))))
+                grad_dirs.append(set(fc_stg.GradientDirections(fc_stg.fc_to_cc(c))))
             # If there is a commom gradient direction
             if set.intersection(*grad_dirs):
                 return False
