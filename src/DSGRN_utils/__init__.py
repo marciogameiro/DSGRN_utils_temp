@@ -21,7 +21,17 @@ def ConleyMorseGraph(parameter, parameter_graph, level=0):
 
     def non_trivial_scc(v):
         scc_v = [c for c in std.digraph.vertices() if fibration.value(c) == v]
-        return len(scc_v) > 1 or any(c in std.digraph.adjacencies(c) for c in scc_v)
+        counts = connection_matrix.count()
+        if v in counts: # Non-trivial Conley Index
+            return True
+        # Get gradient directions
+        grad_dirs = []
+        for c in scc_v:
+            grad_dirs.append(set(std.GradientDirections(std.fc_to_cc(c))))
+        # If there is a commom gradient direction
+        if set.intersection(*grad_dirs):
+            return False
+        return True
 
     CMG = InducedPoset_E(dag, lambda v : non_trivial_scc(v) and v != fringenode)
     return connection_matrix, CMG, std

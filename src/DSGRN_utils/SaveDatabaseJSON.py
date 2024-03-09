@@ -13,6 +13,7 @@ import numpy as np
 
 def network_json(network):
     # Return json data for network
+    D = network.size()
     nodes = []  # Get network nodes
     for d in range(network.size()):
         node = {"id": network.name(d)}
@@ -26,7 +27,10 @@ def network_json(network):
                 "target": network.name(v),
                 "type": edge_type}
         links.append(link)
-    network_json_data = {"network": {"nodes": nodes, "links": links}}
+    # Get number of out-edges (treat the no out edge case as zero out edges)
+    num_edges = sum([len(network.outputs(d)) for d in range(D)])
+    param_dim = 3 * num_edges + D
+    network_json_data = {"network" : {"nodes" : nodes, "links" : links, "parameter_dim" : param_dim}}
     return network_json_data
 
 
@@ -305,9 +309,19 @@ def save_morse_graph_database_json(network, database_fname, param_indices=None,
         # Get all non-trivial Morse sets (including the ones with trivial CI)
 
         def non_trivial_scc(v):
-            scc_v = [c for c in fc_stg.digraph.vertices()
-                     if fibration.value(c) == v]
-            return len(scc_v) > 1 or any(c in fc_stg.digraph.adjacencies(c) for c in scc_v)
+            scc_v = [c for c in std.digraph.vertices() if fibration.value(c) == v]
+            counts = connection_matrix.count()
+            if v in counts: # Non-trivial Conley Index
+                return True
+            # Get gradient directions
+            grad_dirs = []
+            for c in scc_v:
+                grad_dirs.append(set(std.GradientDirections(std.fc_to_cc(c))))
+            # If there is a commom gradient direction
+            if set.intersection(*grad_dirs):
+                return False
+            return True
+
         CMG = InducedPoset_E(dag, lambda v: non_trivial_scc(v) and v != fringenode)
         morse_graph_json_data = morse_graph_json(CMG, connection_matrix)
         morse_sets_json_data = morse_sets_json(fc_stg, CMG, fibration)
