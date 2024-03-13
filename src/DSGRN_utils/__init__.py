@@ -4,7 +4,7 @@
 # MIT LICENSE
 
 import DSGRN
-import pychomp2 as pychomp
+import pychomp
 
 from DSGRN_utils.BlowupGraph import *
 from DSGRN_utils.DrawPosetGraph import *

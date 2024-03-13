@@ -4,7 +4,7 @@
 # 2021-03-06
 
 import DSGRN
-from pychomp2 import *
+from pychomp import *
 from DSGRN_utils.BlowupGraph import *
 from DSGRN_utils.Poset_E import *
 import itertools

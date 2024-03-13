@@ -1,7 +1,7 @@
 # OrderedCubicalComplex.py  # 2020-09-12
 # MIT LICENSE 2020 Ewerton R. Vieira
 
-from pychomp2 import *
+from pychomp import *
 import operator
 import functools
 # from itertools import product

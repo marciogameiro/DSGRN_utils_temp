@@ -3,7 +3,7 @@
 
 import DSGRN
 import re, time
-from pychomp2 import *
+from pychomp import *
 from itertools import product
 from itertools import combinations
 from DSGRN._dsgrn import *
