@@ -11,7 +11,7 @@ def StabilityQuery(network, param_indices=None, level=3):
     param_stability = {}
     for par_index in param_indices:
         parameter = parameter_graph.parameter(par_index)
-        morse_graph = DSGRN_utils.ConleyMorseGraph(parameter, level=level)
+        morse_graph, stg, graded_complex = DSGRN_utils.ConleyMorseGraph(parameter, level=level)
         attractors = [v for v in morse_graph.vertices() if not morse_graph.adjacencies(v)]
         n_stable = len(attractors)
         if n_stable not in param_stability:
