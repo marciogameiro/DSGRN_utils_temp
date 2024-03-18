@@ -5,7 +5,7 @@
 
 import DSGRN
 from pychomp import *
-from DSGRN_utils.BlowupGraph import *
+from DSGRN_utils.RookRulesCubicalComplex import *
 from DSGRN_utils.Poset_E import *
 import itertools
 import numpy as np
@@ -286,7 +286,7 @@ def save_morse_graph_database_json(network, database_fname, param_indices=None,
 
     par_index = param_indices[0]
     parameter = parameter_graph.parameter(par_index)
-    fc_stg = BlowupGraph(parameter, 0)  # level = 0 for construction
+    fc_stg = RookRulesCubicalComplex(parameter, 0)  # level = 0 for construction
     network_json_data = network_json(network)
     cell_complex_json_data = blowup_cc_complex_json(fc_stg)
     param_graph_json_data = parameter_graph_json(
@@ -297,9 +297,9 @@ def save_morse_graph_database_json(network, database_fname, param_indices=None,
         # Compute DSGRN Plus dynamics
         parameter = parameter_graph.parameter(par_index)
         if fc_stg.D == 2:
-            fc_stg = BlowupGraph(parameter, level)
+            fc_stg = RookRulesCubicalComplex(parameter, level)
         else:
-            fc_stg = BlowupGraph(parameter, level)
+            fc_stg = RookRulesCubicalComplex(parameter, level)
         (dag, fibration) = FlowGradedComplex(
             fc_stg.complex(), fc_stg.diagram())
         connection_matrix = ConnectionMatrix(fibration)

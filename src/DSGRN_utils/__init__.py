@@ -4,7 +4,7 @@
 import DSGRN
 import pychomp
 
-from DSGRN_utils.BlowupGraph import *
+from DSGRN_utils.RookRulesCubicalComplex import *
 from DSGRN_utils.SetCM import *
 from DSGRN_utils.SaveDatabaseJSON import *
 from DSGRN_utils.MorseGraph import *

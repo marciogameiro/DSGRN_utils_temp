@@ -9,7 +9,7 @@ from itertools import combinations
 from DSGRN._dsgrn import *
 from DSGRN_utils.OrderedCubicalComplex import *
 
-class BlowupGraph:
+class RookRulesCubicalComplex:
     def complex(self):
         return self.fc
 
