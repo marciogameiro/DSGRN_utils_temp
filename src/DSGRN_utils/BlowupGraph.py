@@ -1,5 +1,5 @@
 # RookRulesCubicalComplex.py  # 2021-12-01
-# MIT LICENSE 2021 Bernardo Rivas, Ewerton R. Vieira
+# MIT LICENSE 2021 Bernardo Rivas, Ewerton R. Vieira, Marcio Gameiro
 
 import DSGRN
 import re, time
@@ -8,7 +8,6 @@ from itertools import product
 from itertools import combinations
 from DSGRN._dsgrn import *
 from DSGRN_utils.OrderedCubicalComplex import *
-
 
 class BlowupGraph:
     def complex(self):
@@ -598,8 +597,9 @@ class BlowupGraph:
         # print('Number of double edges:', num_double_edges)
         return num_double_edges
 
-    def __init__(self, param, pg, level=0):
+    def __init__(self, param, level=0):
         net_spec = param.network().specification()
+        pg = DSGRN.ParameterGraph(param.network())
         par_index = pg.index(param)
         network = DSGRN.Network(net_spec, edge_blowup='none')
         parameter_graph = DSGRN.ParameterGraph(network)
