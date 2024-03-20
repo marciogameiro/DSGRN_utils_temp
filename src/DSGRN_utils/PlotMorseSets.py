@@ -11,8 +11,8 @@ import numpy as np
 def PlotMorseSets(morse_graph, stg, graded_complex, cmap=None, clist=None, alpha=0.7,
                   plot_bdry_cells=False, plot_arrows=True, plot_self_arrows=True,
                   arrow_clr='blue', double_arrow_clr='red', self_arrow_clr='red',
-                  fig_w=7, fig_h=7, plot_axis=False, axis_labels=True, xlabel='$x$', ylabel='$y$',
-                  fontsize=15, fig_fname=None, dpi=300):
+                  fig_w=7, fig_h=7, plot_axis=False, axis_labels=True, xlabel='$x$',
+                  ylabel='$y$', fontsize=15, ax=None, fig_fname=None, dpi=300):
     """Plot Morse sets and the state transition graph"""
     # Cells line width
     line_width = 2
@@ -26,6 +26,8 @@ def PlotMorseSets(morse_graph, stg, graded_complex, cmap=None, clist=None, alpha
     cell_width = 0.5
     # Arrow size factor
     arrow_size_factor = 0.6
+    # Flag to save figure or not (do not save figure if ax is given)
+    save_fig = True if (ax is None and fig_fname is not None) else False
 
     # Default colormap
     # default_cmap = matplotlib.cm.cool
@@ -241,8 +243,9 @@ def PlotMorseSets(morse_graph, stg, graded_complex, cmap=None, clist=None, alpha
         pa.set_linewidths(arrow_line_width)
     # Set patch properties
     p2.set_linewidths(line_width)
-    # Create figure axis
-    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+    # Create figure axis if ax is None
+    if ax == None:
+        fig, ax = plt.subplots(figsize=(fig_w, fig_h))
     # Add collections to the axis
     ax.add_collection(p2)
     ax.add_collection(p0)
@@ -263,7 +266,8 @@ def PlotMorseSets(morse_graph, stg, graded_complex, cmap=None, clist=None, alpha
     ax.autoscale_view()
     # Axis in on by default
     if not plot_axis:
-        plt.axis('off')
-    if fig_fname:
+        ax.axis('off')
+    if save_fig:
         fig.savefig(fig_fname, dpi=dpi, bbox_inches='tight')
-    plt.show()
+    # plt.show()
+    return ax
