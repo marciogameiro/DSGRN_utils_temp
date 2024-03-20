@@ -270,4 +270,4 @@ def PlotMorseSets(morse_graph, stg, graded_complex, cmap=None, clist=None, alpha
     if save_fig:
         fig.savefig(fig_fname, dpi=dpi, bbox_inches='tight')
     # plt.show()
-    return ax
+    # return ax
