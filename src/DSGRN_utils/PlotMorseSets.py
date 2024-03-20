@@ -8,8 +8,8 @@ from matplotlib.collections import PatchCollection
 
 import numpy as np
 
-def PlotMorseSets(morse_graph, stg, graded_complex, cmap=None, clist=None, alpha=0.7,
-                  plot_bdry_cells=False, plot_arrows=True, plot_self_arrows=True,
+def PlotMorseSets(morse_graph, stg, graded_complex, morse_nodes=None, cmap=None, clist=None,
+                  alpha=0.7, plot_bdry_cells=False, plot_arrows=True, plot_self_arrows=True,
                   arrow_clr='blue', double_arrow_clr='red', self_arrow_clr='red',
                   fig_w=7, fig_h=7, plot_axis=False, axis_labels=True, xlabel='$x$',
                   ylabel='$y$', fontsize=15, ax=None, fig_fname=None, dpi=300):
@@ -78,6 +78,9 @@ def PlotMorseSets(morse_graph, stg, graded_complex, cmap=None, clist=None, alpha
         # Color white if not a Morse graph vertex
         if cell_grading not in verts_index:
             return 'white'
+        # Color white if not in list of Morse nodes
+        if verts_index[cell_grading] not in morse_nodes:
+            return 'white'
         # Get face color from colormap
         clr = cmap(cmap_norm(verts_index[cell_grading]))
         # Set the alpha value if the variable alpha is given
@@ -131,6 +134,9 @@ def PlotMorseSets(morse_graph, stg, graded_complex, cmap=None, clist=None, alpha
 
     # Number of Morse sets
     num_morse_sets = len(morse_graph.vertices())
+    # Get list of Morse nodes to plot if not given
+    if morse_nodes == None:
+        morse_nodes = range(num_morse_sets)
     # Set colormap for Morse sets
     if cmap == None and clist == None:
         clist = default_clist
