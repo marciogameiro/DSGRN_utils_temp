@@ -3,7 +3,7 @@
 
 import pychomp
 
-def MorseGraph(stg, scc_dag, graded_complex, connection_matrix):
+def MorseGraph(stg, scc_dag, graded_complex, connection_matrix, prune_grad=True):
     """Construct the Morse graph"""
 
     def nontrivial_scc(v):
@@ -14,6 +14,9 @@ def MorseGraph(stg, scc_dag, graded_complex, connection_matrix):
             return True
         # Get list of cells in the SCC with grading v
         scc_v = [c for c in stg.digraph.vertices() if graded_complex.value(c) == v]
+        # If prune_gradient is False check for multiple cells or self edge in SCC
+        if not prune_grad:
+            return len(scc_v) > 1 or any(c in stg.digraph.adjacencies(c) for c in scc_v)
         # Check if there are common gradient directions
         common_grad_dirs = set()
         for c in scc_v:

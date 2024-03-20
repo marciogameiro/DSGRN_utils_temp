@@ -275,7 +275,7 @@ def state_transition_graph_json(fc_stg):
     return stg_json_data
 
 
-def save_morse_graph_database_json(network, database_fname, param_indices=None,
+def save_morse_graph_database_json(network, database_fname, param_indices=None, prune_grad=True,
                                    verts_colors=None, thres_type=None, level=8):
     net_spec = network.specification()
     network = DSGRN.Network(net_spec, edge_blowup='none')
@@ -313,6 +313,9 @@ def save_morse_graph_database_json(network, database_fname, param_indices=None,
             counts = connection_matrix.count()
             if v in counts: # Non-trivial Conley Index
                 return True
+            # If prune_gradient is False check for multiple cells or self edge in SCC
+            if not prune_grad:
+                return len(scc_v) > 1 or any(c in fc_stg.digraph.adjacencies(c) for c in scc_v)
             # Get gradient directions
             grad_dirs = []
             for c in scc_v:
