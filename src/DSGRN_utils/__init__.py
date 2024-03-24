@@ -12,3 +12,4 @@ from DSGRN_utils.PlotMorseGraph import *
 from DSGRN_utils.PlotMorseSets import *
 from DSGRN_utils.ComputeMorseGraph import *
 from DSGRN_utils.StabilityQuery import *
+from DSGRN_utils.PlotMorseComponent import *
