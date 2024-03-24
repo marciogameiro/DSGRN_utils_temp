@@ -196,7 +196,7 @@ def PlotMorseSets(morse_graph, stg, graded_complex, morse_nodes=None, cmap=None,
     arrow_patches = []
     # Loop through the top cells
     for cell1 in allowed_top_cells:
-        # Get list of adjacencies of cell in the STG
+        # Get list of adjacencies of cell1 in the STG
         adjacencies = [c for c in stg.digraph.adjacencies(cell1) if c in allowed_top_cells]
         # Get cell1 centroid
         cell1_center = cell_centroid(cell1)
