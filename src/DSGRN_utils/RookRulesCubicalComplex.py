@@ -272,15 +272,15 @@ class RookRulesCubicalComplex:
         """
         Return a list of gradient directions of sigma.
         """
-        phi_tstar = [self.Phi(sigma, kappa) for kappa in self.cc.topstar(sigma) if not self.cc.rightfringe(sigma)]
-        return [ n for (n,phi) in enumerate(zip(*phi_tstar)) if (set(phi) == {-1} or set(phi) == {1}) ]
+        phi_tstar = [self.Phi(sigma, kappa) for kappa in self.cc.topstar(sigma) if not self.cc.rightfringe(kappa)]
+        return [n for (n,phi) in enumerate(zip(*phi_tstar)) if (set(phi) == {-1} or set(phi) == {1})]
 
     def NeutralDirections(self,sigma):
         """
         Return a list of neutral directions of sigma
         """
-        phi_tstar = [self.Phi(sigma, kappa) for kappa in self.cc.topstar(sigma) if not self.cc.rightfringe(sigma)]
-        return  [ n for (n,phi) in enumerate(zip(*phi_tstar)) if (0 in set(phi)) ]
+        phi_tstar = [self.Phi(sigma, kappa) for kappa in self.cc.topstar(sigma) if not self.cc.rightfringe(kappa)]
+        return  [n for (n,phi) in enumerate(zip(*phi_tstar)) if (0 in set(phi))]
 
     def isEquilibriumCell(self, sigma):
         """
