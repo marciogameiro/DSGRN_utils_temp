@@ -44,7 +44,7 @@ def MorseComponent(morse_graph, stg, graded_complex, morse_node, blowup=True):
         return shape_vec
 
     # Get cells in the Morse set
-    morse_node_cells = {}
+    morse_node_cells = set()
     for cell in graded_complex.complex()(dim):
         # Skip cells with a different grading (includes fringe cells)
         if graded_complex.value(cell) != node_grading:
