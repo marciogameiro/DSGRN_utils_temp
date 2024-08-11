@@ -72,8 +72,8 @@ def MorseGraph(stg, scc_dag, graded_complex, connection_matrix, prune_grad=True)
         descendant_lists[v] = {u for u in scc_dag.descendants(v) if u in morse_graph_verts and u != v}
     # Get a sorted list Morse graph vertices
     sorted_vertices = sorted(morse_graph_verts)
-    # Further sort Morse graph vertices by number of descendants
-    sorted_vertices.sort(key=lambda v: len(descendant_lists[v]))
+    # # Further sort Morse graph vertices by number of descendants
+    # sorted_vertices.sort(key=lambda v: len(descendant_lists[v]))
     # Create a dictionary of vertices ranks
     morse_graph_vert_ranks = {}
     # Add the ranks to the dictionary
