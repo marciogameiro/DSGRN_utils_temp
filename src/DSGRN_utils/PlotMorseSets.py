@@ -13,12 +13,14 @@ import numpy as np
 
 def PlotMorseSets(morse_graph, stg, graded_complex, morse_nodes=None, cmap=None, clist=None,
                   alpha=0.7, plot_bdry_cells=True, plot_arrows=True, plot_self_arrows=True,
-                  arrow_clr='blue', double_arrow_clr='red', self_arrow_clr='red',
-                  fig_w=7, fig_h=7, plot_axis=False, axis_labels=True, xlabel='$x$',
-                  ylabel='$y$', fontsize=15, ax=None, fig_fname=None, dpi=300):
+                  plot_verts=True, plot_edges=True, arrow_clr='blue', double_arrow_clr='red',
+                  self_arrow_clr='red', fig_w=7, fig_h=7, plot_axis=False, axis_labels=True,
+                  xlabel='$x$', ylabel='$y$', fontsize=15, ax=None, fig_fname=None, dpi=300):
     """Plot Morse sets and the state transition graph"""
     # Cells line width
     line_width = 2
+    # Cells edge color
+    edge_clr = 'black' if plot_edges else 'none'
     # Arrow line width
     arrow_line_width = 1.5
     # Vertex size
@@ -183,9 +185,8 @@ def PlotMorseSets(morse_graph, stg, graded_complex, morse_nodes=None, cmap=None,
         # Add vertices to the set of cell complex vertices
         cell_complex_vertices.update(cell_verts)
         # Plot face as a polygon and add to polygon patches
-        polygon = Polygon(cell_face, fc=face_clr, ec='black', closed=True)
+        polygon = Polygon(cell_face, fc=face_clr, ec=edge_clr, closed=True)
         polygon_patches[1].append(polygon)
-
     # Get polygon patches for dim 0
     for cell_v in cell_complex_vertices:
         # Plot vertex as a filled circle
@@ -241,7 +242,8 @@ def PlotMorseSets(morse_graph, stg, graded_complex, morse_nodes=None, cmap=None,
             arrow_patches.append(arrow)
 
     # Create patchs collections for dims 0 and 2
-    p0 = PatchCollection(polygon_patches[0], match_original=True)
+    if plot_verts:
+        p0 = PatchCollection(polygon_patches[0], match_original=True)
     p2 = PatchCollection(polygon_patches[1], match_original=True)
     if plot_self_arrows:
         # Create patch collection of centroids and set properties
@@ -258,7 +260,8 @@ def PlotMorseSets(morse_graph, stg, graded_complex, morse_nodes=None, cmap=None,
         fig, ax = plt.subplots(figsize=(fig_w, fig_h))
     # Add collections to the axis
     ax.add_collection(p2)
-    ax.add_collection(p0)
+    if plot_verts:
+        ax.add_collection(p0)
     if plot_self_arrows:
         ax.add_collection(pc)
     if plot_arrows:

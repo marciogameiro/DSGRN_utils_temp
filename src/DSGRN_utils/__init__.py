@@ -11,3 +11,5 @@ from DSGRN_utils.PlotMorseSets import *
 from DSGRN_utils.ComputeMorseGraph import *
 from DSGRN_utils.PlotMorseComponent import *
 from DSGRN_utils.StabilityQuery import *
+from DSGRN_utils.WallLabelling import *
+from DSGRN_utils.RampFunction import *

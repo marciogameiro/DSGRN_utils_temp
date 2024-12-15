@@ -9,30 +9,47 @@ import DSGRN
 import pychomp
 
 class CubicalBlowupGraph:
-    def __init__(self, parameter, self_edges=True, level=3):
-        # Get the parameter index in the original parameter graph
-        original_par_graph = DSGRN.ParameterGraph(parameter.network())
-        par_index = original_par_graph.index(parameter)
-        # Redefine network without self edges blowup
-        net_spec = parameter.network().specification()
-        network = DSGRN.Network(net_spec, edge_blowup='none')
-        # Get the parameter in the new parameter graph
-        parameter_graph = DSGRN.ParameterGraph(network)
-        parameter = parameter_graph.parameter(par_index)
-        # Set network and parameter
-        self.parameter = parameter
-        self.network = network
+    def __init__(self, parameter=None, labelling=None, num_thresholds=None, self_edges=True, level=3):
+        # Check if input arguments are valid
+        if parameter is None and (labelling is None or num_thresholds is None):
+            raise ValueError('Either parameter or labelling and num_thresholds must be provided.')
+        if parameter and (labelling or num_thresholds):
+            raise ValueError('Only parameter or labelling and num_thresholds should be provided.')
+        # Extract info from parameter
+        if parameter:
+            # Get the parameter index in the original parameter graph
+            original_par_graph = DSGRN.ParameterGraph(parameter.network())
+            par_index = original_par_graph.index(parameter)
+            # Redefine network without self edges blowup
+            net_spec = parameter.network().specification()
+            network = DSGRN.Network(net_spec, edge_blowup='none')
+            # Get the parameter in the new parameter graph
+            parameter_graph = DSGRN.ParameterGraph(network)
+            parameter = parameter_graph.parameter(par_index)
+            # # Set network and parameter
+            # self.parameter = parameter
+            # self.network = network
+            # # Parameter labelling
+            # self.labelling = self.parameter.labelling()
+            # # Space dimension
+            # self.dim = self.network.size()
+            # # Number of thresholds (same as number of out edges)
+            # self.num_thresholds = [len(self.network.outputs(n)) for n in range(self.dim)]
+            # Get parameter labelling
+            labelling = parameter.labelling()
+            # Number of thresholds (same as number of out edges)
+            num_thresholds = [len(network.outputs(n)) for n in range(network.size())]
         # Parameter labelling
-        self.labelling = self.parameter.labelling()
+        self.labelling = labelling
+        # Number of thresholds
+        self.num_thresholds = num_thresholds
         # Space dimension
-        self.dim = self.network.size()
+        self.dim = len(self.num_thresholds)
         # Add self edges if True (they are not necessary)
         self.self_edges = self_edges
         # Multivalued map level (level 3 not allowed in higher dims)
         # self.level = level if self.dim <= 3 else min(level, 2)
         self.level = level
-        # Number of thresholds (same as number of out edges)
-        self.num_thresholds = [len(self.network.outputs(n)) for n in range(self.dim)]
         # Max values for the indices of cells in the cubical complex X
         self.limits = [k + 1 for k in self.num_thresholds]
         # Number of boxes per dimension in the cubical complex X
@@ -282,10 +299,12 @@ class CubicalBlowupGraph:
         coords = self.cubical_complex.coordinates(cc_cell)
         # Get the interior (non-boundary) inessential directions
         iness_inter = [n for n in self.inessential_directions(cc_cell) if coords[n] > 0 and coords[n] < self.limits[n]]
-        # Get regulation map of cc_cell
-        reg_map = {n: self.parameter.regulator(n, coords[n] - 1) for n in iness_inter}
-        # Define active regulation map
-        active_reg_map = {n: reg_map[n] for n in reg_map if self.active_regulation(cc_cell, n, reg_map[n])}
+        # # Get regulation map of cc_cell
+        # reg_map = {n: self.parameter.regulator(n, coords[n] - 1) for n in iness_inter}
+        # # Define active regulation map
+        # active_reg_map = {n: reg_map[n] for n in reg_map if self.active_regulation(cc_cell, n, reg_map[n])}
+        # Get active regulation map of cc_cell
+        active_reg_map = {n: k for n in iness_inter for k in range(self.dim) if self.active_regulation(cc_cell, n, k)}
         return active_reg_map
 
     def flow_direction_top_cell(self, cc_face, cc_coface, cc_top_cell):
