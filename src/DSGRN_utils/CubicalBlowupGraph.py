@@ -9,7 +9,7 @@ import DSGRN
 import pychomp
 
 class CubicalBlowupGraph:
-    def __init__(self, parameter=None, labelling=None, num_thresholds=None, self_edges=True, level=3):
+    def __init__(self, parameter=None, labelling=None, num_thresholds=None, self_edges=True, level=None):
         # Check if input arguments are valid
         if parameter is None and (labelling is None or num_thresholds is None):
             raise ValueError('Either parameter or labelling and num_thresholds must be provided.')
@@ -49,7 +49,10 @@ class CubicalBlowupGraph:
         self.self_edges = self_edges
         # Multivalued map level (level 3 not allowed in higher dims)
         # self.level = level if self.dim <= 3 else min(level, 2)
-        self.level = level
+        if level == None:
+            self.level = {1, 21, 22, 23, 24, 3}
+        else:
+            self.level = set(level)
         # Max values for the indices of cells in the cubical complex X
         self.limits = [k + 1 for k in self.num_thresholds]
         # Number of boxes per dimension in the cubical complex X
@@ -84,6 +87,9 @@ class CubicalBlowupGraph:
         self.blowup_jump = [1]
         for k in self.blowup_grid_size:
             self.blowup_jump.append(self.blowup_jump[-1] * k)
+        self.cells_faces = {}
+        self.cells_cofaces = {}
+        self.compute_cells_faces_cofaces()
         # State Transition Graph (STG) on top cells (including fringe) of Xb
         self.digraph = pychomp.DiGraph()
         # # Add top cells of Xb (including fringe) as vertices
@@ -92,6 +98,17 @@ class CubicalBlowupGraph:
         #     self.digraph.add_vertex(cell)
         # Compute multivalued map (digraph)
         self.compute_multivalued_map()
+
+    def compute_cells_faces_cofaces(self):
+        for cc_face in self.cubical_complex:
+            if self.cubical_complex.rightfringe(cc_face):
+                continue
+            self.cells_cofaces[cc_face] = self.star(cc_face)
+            for cc_coface in self.cells_cofaces[cc_face]:
+                if cc_coface in self.cells_faces:
+                    self.cells_faces[cc_coface].append(cc_face)
+                else:
+                    self.cells_faces[cc_coface] = [cc_face]
 
     def complex(self):
         """Return the cell complex"""
@@ -433,7 +450,7 @@ class CubicalBlowupGraph:
         wall_side = -1 if face_coords[n_opaque] == coface_coords[n_opaque] else 1
         return cc_new_top_cell, n_opaque, wall_side
 
-    def decision_wall_direction(self, cc_cell1, cc_cell2):
+    def decision_wall_direction(self, cc_cell1, cc_cell2, levels):
         """Return the decision wall (if there is one) flow direction between
         cc_cell1 and cc_cell2. It assumes that one cell is a face of the other.
         The return value is -1 if the flow goes cc_cell2 -> cc_cell1 (cc_cell1
@@ -454,11 +471,53 @@ class CubicalBlowupGraph:
             return 0
         # Get decision wall components and check wall label direction
         cc_dec_wall_top_cell, n_opaque, side = dec_wall
+        ################################################################################
+        # Get proper faces of cc_face
+        proper_faces_cc_face = [cell for cell in self.cells_faces[cc_face] if cell != cc_face]
+        # Check if n_opaque is cyclic at any face of cc_face
+        n_opaque_cyclic = False
+        for cell in proper_faces_cc_face:
+            cell_act_reg_map = self.active_regulation_map(cell)
+            cell_cycle_decomp = self.cycle_decomposition(cell_act_reg_map)
+            for cycle in cell_cycle_decomp:
+                if n_opaque in cycle:
+                    n_opaque_cyclic = True
+                    break
+        # Check if n_opaque is actively regulate by cc_face
+        cc_face_act_reg_map = self.active_regulation_map(cc_face)
+        n_opaque_act_regulated = True if n_opaque in cc_face_act_reg_map else False
+        # Decide if F2 maps coface to face
+        if self.wall_label(cc_dec_wall_top_cell, n_opaque, side) == side:
+            # cc_face is an exit face of cc_coface
+            F2_maps_coface_to_face = True
+        else:
+            # cc_face is an entrance face of cc_coface
+            F2_maps_coface_to_face = False
+        # Check conditions and return 0 depending on level
+        if F2_maps_coface_to_face and 1 not in levels:
+            # Don't allow condition (i) of Definition 7.2.13
+            return 0
+        if not n_opaque_cyclic:
+            # n_opaque is not cyclic
+            if not n_opaque_act_regulated:
+                # n_opaque is not actively regulated by cc_face
+                if 2 not in levels:
+                    # Don't allow condition (ii) of Definition 7.2.13
+                    return 0
+            else:
+                # n_opaque is actively regulated by cc_face
+                if 3 not in levels:
+                    # Don't allow condition (iii) of Definition 7.2.13
+                    return 0
+        else: # n_opaque is cyclic
+            if 4 not in levels:
+                # Don't allow condition (iv) of Definition 7.2.13
+                return 0
+        ################################################################################
         if self.wall_label(cc_dec_wall_top_cell, n_opaque, side) == side:
             # cc_face is an exit face of cc_coface
             return -face_sign
         else:
-            # cc_face is an entrance face of cc_coface
             return face_sign
 
     def semi_opaque_cell(self, cc_cell):
@@ -615,7 +674,7 @@ class CubicalBlowupGraph:
     def compute_multivalued_map(self):
         """Compute the multivalued map (digraph) on top cells of the blowup complex"""
         # Compute trivial map for level 0
-        if self.level == 0:
+        if 0 in self.level:
             self.trivial_multivalued_map()
             return
         # Add edges corresponding to level 1 (multivalued map F_1)
@@ -646,9 +705,11 @@ class CubicalBlowupGraph:
                     self.digraph.add_edge(cell1, cell2)
                     continue
                 # Add edge corresponding to F_2 if level >= 2
-                if self.level > 1:
+                if 21 in self.level or 22 in self.level or 23 in self.level or 24 in self.level:
+                # if self.level > 1:
+                    levels = [lev - 20 for lev in self.level]
                     # Get decision wall flow direction and add edge
-                    flow_dir = self.decision_wall_direction(cc_cell1, cc_cell2)
+                    flow_dir = self.decision_wall_direction(cc_cell1, cc_cell2, levels=levels)
                     if flow_dir == -1:
                         self.digraph.add_edge(cell2, cell1)
                         continue
@@ -656,7 +717,8 @@ class CubicalBlowupGraph:
                         self.digraph.add_edge(cell1, cell2)
                         continue
                 # Add edges corresponding to F_3 if level == 3
-                if self.level == 3:
+                if 3 in self.level:
+                # if self.level == 3:
                     # Get cyclic extension flow direction and unstable cells and add edges
                     flow_dir, unst_cells = self.cyclic_extension_direction(cc_cell1, cc_cell2)
                     if flow_dir == -1:
